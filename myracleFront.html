@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Myracle.IO MULTIMODEL LLM</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f3c7c5, #f9d7c6);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: auto; /* Allow body to scroll */
+        }
+    
+        .container {
+            background: linear-gradient(145deg, #ffffff, #f7f9fc);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 900px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            box-sizing: border-box; /* Ensure padding and border are included in the width */
+        }
+    
+        h1 {
+            color: #4a4a4a;
+            margin-top: 0;
+            font-size: 40px;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ff6f61, #ffb77b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+    
+        label {
+            display: block;
+            margin: 25px 0 10px;
+            font-size: 22px;
+            color: #333;
+            font-weight: 600;
+        }
+    
+        input[type="file"] {
+            display: block;
+            margin: 25px auto;
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid #007bff;
+            background: #e0f7fa;
+            color: #007bff;
+            font-size: 16px;
+        }
+    
+        input[type="text"] {
+            width: calc(100% - 30px);
+            padding: 20px;
+            border: 2px solid #007bff;
+            border-radius: 10px;
+            box-sizing: border-box;
+            margin-bottom: 25px;
+            font-size: 18px;
+            background: #f8f9fc;
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+    
+        input[type="text"]:focus {
+            background: #ffffff;
+            border-color: #0056b3;
+            outline: none;
+        }
+    
+        button {
+            background: linear-gradient(45deg, #ff4081, #ff5252);
+            color: white;
+            border: none;
+            padding: 18px 35px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 22px;
+            font-weight: bold;
+            transition: background 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+    
+        button:hover {
+            background: linear-gradient(45deg, #ff0077, #ff3d71);
+            transform: scale(1.05);
+        }
+    
+        .output {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #ffffff, #e6f4f1);
+            border: 2px solid #dcdcdc;
+            border-radius: 12px;
+            color: #333;
+            text-align: left;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-height: 600px; /* Increased maximum height */
+            overflow-y: auto; /* Enable vertical scrolling */
+            overflow-x: hidden; /* Hide horizontal scrolling */
+            text-align: left; /* Align text to the left */
+            white-space: pre-wrap; /* Preserve white spaces */
+        }
+    
+        .output h2 {
+            margin-top: 0;
+            font-size: 28px;
+            font-weight: 700;
+            color: #007bff;
+        }
+    
+        .output p {
+            font-size: 18px;
+            line-height: 1.6;
+            margin: 12px 0;
+        }
+    
+        .file-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+    
+        .file-list li {
+            background: #f1f1f1;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #dcdcdc;
+            font-size: 16px;
+            color: #333;
+        }
+    </style>
+    
+</head>
+<body>
+    <div class="container">
+        <h1>Myracle.IO MULTIMODEL LLM</h1>
+
+        <!-- Form to upload multiple images and enter text -->
+        <form id="uploadForm" enctype="multipart/form-data">
+            <label for="imageUpload">Select images to upload:</label>
+            <input type="file" id="imageUpload" name="image" accept="image/*" multiple><br><br>
+
+            <!-- Textbox -->
+            <label for="inputText">Optional text</label>
+            <input type="text" id="inputText" name="option" placeholder="Type here..."><br><br>
+
+            <!-- Submit button -->
+            <button type="submit">Describe test case</button>
+        </form>
+        <div id="load"></div>
+        <pre id="result" class="output">
+            <!-- Results will be displayed here -->
+        </pre>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the form from submitting the default way
+    
+            const context = document.getElementById('inputText').value;
+            const files = document.getElementById('imageUpload').files;
+            const resultDiv = document.getElementById('result');
+            
+            if (files.length === 0) {
+                alert('Please upload at least one image.');
+                return;
+            }
+    
+            // Clear previous results and show loading indicator
+            document.getElementById('load').innerHTML = '<div class="loader">Loading...</div>';
+    
+            // Iterate through each file and send individual requests
+            Array.from(files).forEach(file => {
+                const formData = new FormData();
+                formData.append('option', context);
+                formData.append('image', file);
+    
+                fetch('http://127.0.0.1:5000/upload-image', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('load').innerHTML="";
+                    // Clear the loading indicator and show the result
+                    resultDiv.innerHTML += `<h2>Results for ${file.name}:</h2><p>${data.generated_text}</p>`;
+                })
+                .catch(error => {
+                    // Clear the loading indicator and show the error
+                    resultDiv.innerHTML = `<h2>Results for ${file.name}:</h2><p>Error: ${error.message}</p>`;
+                });
+            });
+        });
+    </script>
+    
+</body>
+</html>
