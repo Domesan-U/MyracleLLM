@@ -1,6 +1,7 @@
 WELCOME MYRACLE.IO
 
 TECH STACK : PYTHON , FLASK, GEMINI, JS, HTML, CSS
+
 TIME TAKEN : 2.15 mins(45min planning + 1hr coding + 30 mins recording)
 
 The basic and only main concept lies here is how we handling the prompt with gemini.
